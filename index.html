@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VK Tiers</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #090b10;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background: #0e1118;
+    border-bottom: 1px solid #292e3a;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #ff3158;
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.subtitle {
+    color: #858e9f;
+    font-size: 13px;
+}
+
+button,
+select,
+input {
+    background: #0c0f15;
+    color: white;
+    border: 1px solid #303643;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+button {
+    background: #ff3158;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+main {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 0 18px;
+}
+
+.card {
+    background: #12151c;
+    border: 1px solid #272c38;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+input {
+    flex: 1;
+    min-width: 200px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 15px 8px;
+    border-bottom: 1px solid #272c38;
+    text-align: right;
+}
+
+th {
+    color: #858e9f;
+}
+
+.rank {
+    color: #ff3158;
+    font-weight: bold;
+}
+
+.tier {
+    font-weight: bold;
+}
+
+.admin {
+    display: none;
+}
+
+.admin.show {
+    display: block;
+}
+
+.notice {
+    margin-top: 10px;
+    background: #191d26;
+    color: #aeb5c3;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+@media(max-width:600px) {
+    header {
+        padding: 18px;
+    }
+
+    .logo {
+        font-size: 24px;
+    }
+
+    th,
+    td {
+        padding: 11px 5px;
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div>
+    <div class="logo">VK TIERS</div>
+    <div class="subtitle">
+        Minecraft Competitive Tier List
+    </div>
+</div>
+
+<button onclick="toggleAdmin()">
+    لوحة التحكم
+</button>
+
+</header>
+
+<main>
+
+<section class="card">
+
+<h1>VK Tiers</h1>
+
+<p style="color:#858e9f">
+تصنيف لاعبين Minecraft حسب المستوى
+</p>
+
+<div class="controls">
+
+<input
+id="search"
+placeholder="ابحث عن لاعب..."
+oninput="render()"
+>
+
+<select id="mode" onchange="render()">
+
+<option value="all">
+كل الأنماط
+</option>
+
+<option value="Combat">
+Combat
+</option>
+
+<option value="Crystal">
+Crystal
+</option>
+
+<option value="Mace">
+Mace
+</option>
+
+<option value="Sword">
+Sword
+</option>
+
+</select>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>اللاعب</th>
+
+<th>النمط</th>
+
+<th>Tier</th>
+
+<th>النقاط</th>
+
+</tr>
+
+</thead>
+
+<tbody id="players"></tbody>
+
+</table>
+
+</section>
+
+
+<section
+id="admin"
+class="card admin"
+>
+
+<h2>
+لوحة التحكم
+</h2>
+
+<div class="controls">
+
+<input
+id="playerName"
+placeholder="اسم اللاعب"
+>
+
+<select id="playerMode">
+
+<option>Combat</option>
+<option>Crystal</option>
+<option>Mace</option>
+<option>Sword</option>
+
+</select>
+
+<select id="playerTier">
+
+<option>HT1</option>
+<option>LT1</option>
+
+<option>HT2</option>
+<option>LT2</option>
+
+<option>HT3</option>
+<option>LT3</option>
+
+<option>HT4</option>
+<option>LT4</option>
+
+<option>HT5</option>
+<option>LT5</option>
+
+</select>
+
+<input
+id="playerPoints"
+type="number"
+placeholder="النقاط"
+>
+
+<button onclick="addPlayer()">
+إضافة لاعب
+</button>
+
+</div>
+
+<div class="notice">
+
+اللاعبون الذين تضيفهم يتم حفظهم تلقائياً على الجهاز.
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const STORAGE_KEY = "VK_TIERS_PLAYERS";
+
+let players =
+JSON.parse(localStorage.getItem(STORAGE_KEY))
+||
+[
+    {
+        name: "PlayerOne",
+        mode: "Combat",
+        tier: "HT1",
+        points: 1000
+    },
+
+    {
+        name: "CrystalKing",
+        mode: "Crystal",
+        tier: "LT1",
+        points: 950
+    },
+
+    {
+        name: "MacePro",
+        mode: "Mace",
+        tier: "HT2",
+        points: 900
+    },
+
+    {
+        name: "Sworder",
+        mode: "Sword",
+        tier: "LT2",
+        points: 850
+    }
+];
+
+
+function savePlayers() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(players)
+    );
+
+}
+
+
+function render() {
+
+    const search =
+        document
+        .getElementById("search")
+        .value
+        .toLowerCase();
+
+    const mode =
+        document
+        .getElementById("mode")
+        .value;
+
+
+    const filtered =
+        players
+        .filter(player => {
+
+            const matchesName =
+                player.name
+                .toLowerCase()
+                .includes(search);
+
+            const matchesMode =
+                mode === "all"
+                ||
+                player.mode === mode;
+
+            return matchesName && matchesMode;
+
+        })
+
+        .sort(
+            (a,b) =>
+            b.points - a.points
+        );
+
+
+    document
+    .getElementById("players")
+    .innerHTML =
+
+    filtered.map((player,index) => `
+
+        <tr>
+
+            <td class="rank">
+                ${index + 1}
+            </td>
+
+            <td>
+                ${escapeHTML(player.name)}
+            </td>
+
+            <td>
+                ${player.mode}
+            </td>
+
+            <td class="tier">
+                ${player.tier}
+            </td>
+
+            <td>
+                ${player.points}
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+function addPlayer() {
+
+    const name =
+        document
+        .getElementById("playerName")
+        .value
+        .trim();
+
+    const mode =
+        document
+        .getElementById("playerMode")
+        .value;
+
+    const tier =
+        document
+        .getElementById("playerTier")
+        .value;
+
+    const points =
+        Number(
+            document
+            .getElementById("playerPoints")
+            .value
+        );
+
+
+    if (!name || !points) {
+
+        alert(
+            "اكتب اسم اللاعب والنقاط"
+        );
+
+        return;
+
+    }
+
+
+    players.push({
+
+        name: name,
+
+        mode: mode,
+
+        tier: tier,
+
+        points: points
+
+    });
+
+
+    savePlayers();
+
+    render();
+
+
+    document
+    .getElementById("playerName")
+    .value = "";
+
+    document
+    .getElementById("playerPoints")
+    .value = "";
+
+}
+
+
+function toggleAdmin() {
+
+    document
+    .getElementById("admin")
+    .classList
+    .toggle("show");
+
+}
+
+
+function escapeHTML(text) {
+
+    return text.replace(
+        /[&<>"']/g,
+
+        character => ({
+
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+
+        })[character]
+
+    );
+
+}
+
+
+render();
+
+</script>
+
+</body>
+</html>
