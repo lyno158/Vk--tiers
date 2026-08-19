@@ -9,15 +9,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
     margin:0;
     background:#090b10;
-    color:white;
+    color:#fff;
     font-family:Arial,sans-serif;
 }
 
@@ -25,11 +22,10 @@ header{
     padding:22px 6%;
     background:#0e1118;
     border-bottom:1px solid #292e3a;
-
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:12px;
+    gap:15px;
 }
 
 .logo{
@@ -63,8 +59,7 @@ main{
     margin:20px 0;
 }
 
-input,
-select{
+input,select{
     background:#0c0f15;
     color:white;
     border:1px solid #303643;
@@ -95,6 +90,11 @@ button.danger{
     background:#8f1f35;
 }
 
+button.small{
+    padding:7px 10px;
+    font-size:12px;
+}
+
 .admin{
     display:none;
 }
@@ -104,11 +104,11 @@ table{
     border-collapse:collapse;
 }
 
-th,
-td{
+th,td{
     padding:14px 8px;
     border-bottom:1px solid #272c38;
     text-align:right;
+    vertical-align:middle;
 }
 
 th{
@@ -124,6 +124,29 @@ th{
     font-weight:bold;
 }
 
+.kits{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.kit{
+    background:#0c0f15;
+    border:1px solid #292e3a;
+    border-radius:9px;
+    padding:8px;
+}
+
+.kit-name{
+    font-weight:bold;
+}
+
+.kit-info{
+    color:#858e9f;
+    font-size:12px;
+    margin-top:3px;
+}
+
 .actions{
     display:flex;
     gap:6px;
@@ -137,64 +160,77 @@ th{
 
 .modal{
     display:none;
-
     position:fixed;
     inset:0;
-
-    background:rgba(0,0,0,.75);
-
+    background:rgba(0,0,0,.78);
     align-items:center;
     justify-content:center;
-
     padding:20px;
+    z-index:10;
 }
 
 .modal-box{
     width:100%;
-    max-width:450px;
-
+    max-width:520px;
+    max-height:90vh;
+    overflow:auto;
     background:#12151c;
-
     border:1px solid #303643;
     border-radius:18px;
-
     padding:22px;
 }
 
 .modal-box input,
 .modal-box select{
     width:100%;
-    margin:7px 0;
+    margin:6px 0;
 }
 
 .modal-buttons{
     display:flex;
     gap:8px;
-    margin-top:10px;
+    margin-top:12px;
 }
 
 .modal-buttons button{
     flex:1;
 }
 
-#loginStatus,
-#playerStatus{
-    color:#ff879d;
+.kit-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    gap:7px;
+    align-items:center;
+    margin:8px 0;
 }
 
-@media(max-width:600px){
+.kit-row input,
+.kit-row select{
+    margin:0;
+}
+
+.remove-kit{
+    background:#8f1f35;
+}
+
+@media(max-width:700px){
 
     .logo{
         font-size:24px;
     }
 
-    th,
-    td{
+    th,td{
         font-size:13px;
     }
 
-}
+    .kit-row{
+        grid-template-columns:1fr 1fr;
+    }
 
+    .kit-row button{
+        grid-column:span 2;
+    }
+}
 </style>
 </head>
 
@@ -203,35 +239,21 @@ th{
 <header>
 
 <div>
-
-<div class="logo">
-VK TIERS
-</div>
-
-<div class="subtitle">
-Minecraft Competitive Tier List
-</div>
-
+<div class="logo">VK TIERS</div>
+<div class="subtitle">Minecraft Competitive Tier List</div>
 </div>
 
 <div>
 
-<button
-id="loginBtn"
-onclick="openLogin()">
-
+<button id="loginBtn" onclick="openLogin()">
 🔐 دخول الإدارة
-
 </button>
 
-<button
-id="logoutBtn"
+<button id="logoutBtn"
 class="secondary"
 onclick="logout()"
 style="display:none">
-
 تسجيل خروج
-
 </button>
 
 </div>
@@ -243,61 +265,34 @@ style="display:none">
 
 <section class="card">
 
-<h1>
-VK Tiers
-</h1>
+<h1>VK Tiers</h1>
 
 <p class="subtitle">
 تصنيف لاعبي Minecraft
 </p>
-
 
 <div class="controls">
 
 <input
 id="search"
 placeholder="ابحث عن لاعب..."
-oninput="render()"
->
+oninput="render()">
 
-<select
-id="mode"
-onchange="render()">
-
-<option value="all">
-كل الأنماط
-</option>
-
-<option value="UHC">
-UHC
-</option>
-
-<option value="Crystal">
-Crystal
-</option>
-
-<option value="Mace">
-Mace
-</option>
-
-<option value="Sword">
-Sword
-</option>
-
+<select id="kitFilter" onchange="render()">
+<option value="all">كل الـKits</option>
+<option value="UHC">UHC</option>
+<option value="Crystal">Crystal</option>
+<option value="Mace">Mace</option>
+<option value="Sword">Sword</option>
 </select>
 
 </div>
 
 
-<div
-id="adminPanel"
-class="admin">
+<div id="adminPanel" class="admin">
 
-<button
-onclick="openAddPlayer()">
-
+<button onclick="openAddPlayer()">
 ➕ إضافة لاعب
-
 </button>
 
 </div>
@@ -308,53 +303,22 @@ onclick="openAddPlayer()">
 <table>
 
 <thead>
-
 <tr>
 
-<th>
-#
-</th>
-
-<th>
-اللاعب
-</th>
-
-<th>
-النمط
-</th>
-
-<th>
-Tier
-</th>
-
-<th>
-النقاط
-</th>
-
-<th
-class="admin">
-
-الإدارة
-
-</th>
+<th>#</th>
+<th>اللاعب</th>
+<th>الـKits</th>
+<th class="admin">الإدارة</th>
 
 </tr>
-
 </thead>
 
-
-<tbody
-id="players">
-
-</tbody>
+<tbody id="players"></tbody>
 
 </table>
 
-
 <div id="status">
-
 جاري تحميل اللاعبين...
-
 </div>
 
 </section>
@@ -365,50 +329,37 @@ id="players">
 
 <!-- LOGIN -->
 
-<div
-id="loginModal"
-class="modal">
+<div id="loginModal" class="modal">
 
 <div class="modal-box">
 
-<h2>
-تسجيل دخول الإدارة
-</h2>
+<h2>تسجيل دخول الإدارة</h2>
 
 <input
 id="email"
 type="email"
-placeholder="البريد الإلكتروني"
->
+placeholder="البريد الإلكتروني">
 
 <input
 id="password"
 type="password"
-placeholder="كلمة المرور"
->
+placeholder="كلمة المرور">
 
 <div class="modal-buttons">
 
-<button
-onclick="login()">
-
+<button onclick="login()">
 دخول
-
 </button>
 
 <button
 class="secondary"
 onclick="closeLogin()">
-
 إلغاء
-
 </button>
 
 </div>
 
-<p
-id="loginStatus">
-</p>
+<p id="loginStatus"></p>
 
 </div>
 
@@ -416,80 +367,94 @@ id="loginStatus">
 
 
 
-<!-- ADD / EDIT -->
+<!-- ADD / EDIT PLAYER -->
 
-<div
-id="playerModal"
-class="modal">
+<div id="playerModal" class="modal">
 
 <div class="modal-box">
 
-<h2
-id="playerModalTitle">
-
+<h2 id="playerModalTitle">
 إضافة لاعب
-
 </h2>
 
 <input
 id="playerName"
-placeholder="اسم اللاعب"
->
+placeholder="اسم اللاعب">
 
-<select
-id="playerMode">
+<h3>
+Kits
+</h3>
 
-<option value="Combat">
-Combat
-</option>
+<div id="kitRows"></div>
 
-<option value="Crystal">
-Crystal
-</option>
+<button
+class="secondary"
+onclick="addKitRow()">
 
-<option value="Mace">
-Mace
-</option>
+➕ إضافة Kit
 
-<option value="Sword">
-Sword
-</option>
-
-</select>
-
-<input
-id="playerTier"
-placeholder="Tier مثل HT1"
->
-
-<input
-id="playerPoints"
-type="number"
-placeholder="النقاط"
->
+</button>
 
 <div class="modal-buttons">
 
-<button
-onclick="savePlayer()">
-
+<button onclick="savePlayer()">
 حفظ
-
 </button>
 
 <button
 class="secondary"
 onclick="closePlayerModal()">
-
 إلغاء
-
 </button>
 
 </div>
 
-<p
-id="playerStatus">
-</p>
+<p id="playerStatus"></p>
+
+</div>
+
+</div>
+
+
+
+<!-- EDIT KIT -->
+
+<div id="kitModal" class="modal">
+
+<div class="modal-box">
+
+<h2>
+تعديل Kit
+</h2>
+
+<input
+id="editKitName"
+placeholder="Kit">
+
+<input
+id="editKitTier"
+placeholder="Tier">
+
+<input
+id="editKitPoints"
+type="number"
+placeholder="النقاط">
+
+<div class="modal-buttons">
+
+<button onclick="saveKitEdit()">
+حفظ
+</button>
+
+<button
+class="secondary"
+onclick="closeKitModal()">
+إلغاء
+</button>
+
+</div>
+
+<p id="kitStatus"></p>
 
 </div>
 
@@ -498,7 +463,6 @@ id="playerStatus">
 
 
 <script>
-
 
 /* =========================
    SUPABASE
@@ -510,7 +474,6 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_Vj2BaNXlQQSrbb71D7rmfA_PxTuYtgI";
 
-
 const supabaseClient =
 supabase.createClient(
     SUPABASE_URL,
@@ -518,24 +481,23 @@ supabase.createClient(
 );
 
 
-
 /* =========================
    VARIABLES
 ========================= */
 
 let players = [];
-
+let playerKits = [];
 let isAdmin = false;
-
 let editingPlayerId = null;
+let editingKitId = null;
 
 
 
 /* =========================
-   LOAD PLAYERS
+   LOAD DATA
 ========================= */
 
-async function loadPlayers(){
+async function loadData(){
 
     const status =
         document.getElementById("status");
@@ -545,18 +507,35 @@ async function loadPlayers(){
 
     try{
 
-        const {data,error} =
+        const playersResult =
             await supabaseClient
             .from("players")
-            .select("*")
+            .select("id,name")
+            .order("name");
+
+        if(playersResult.error)
+            throw playersResult.error;
+
+
+        const kitsResult =
+            await supabaseClient
+            .from("player_kits")
+            .select("id,player_id,kit,tier,points")
             .order("points",{ascending:false});
 
-        if(error)
-            throw error;
+        if(kitsResult.error)
+            throw kitsResult.error;
 
-        players = data || [];
+
+        players =
+            playersResult.data || [];
+
+        playerKits =
+            kitsResult.data || [];
+
 
         render();
+
 
         status.textContent =
             players.length +
@@ -570,13 +549,12 @@ async function loadPlayers(){
             "خطأ: " +
             error.message;
     }
-
 }
 
 
 
 /* =========================
-   CHECK ADMIN
+   ADMIN CHECK
 ========================= */
 
 async function checkAdmin(){
@@ -615,29 +593,18 @@ async function checkAdmin(){
     }
 
 
-    if(
-        data &&
-        (
-            data.role === "owner" ||
-            data.role === "admin"
+    setAdminUI(
+        !!(
+            data &&
+            (
+                data.role === "owner" ||
+                data.role === "admin"
+            )
         )
-    ){
-
-        setAdminUI(true);
-
-    }else{
-
-        setAdminUI(false);
-
-    }
-
+    );
 }
 
 
-
-/* =========================
-   ADMIN UI
-========================= */
 
 function setAdminUI(value){
 
@@ -647,41 +614,22 @@ function setAdminUI(value){
     document
     .getElementById("adminPanel")
     .style.display =
-        value
-        ? "block"
-        : "none";
+        value ? "block" : "none";
 
 
     document
     .getElementById("loginBtn")
     .style.display =
-        value
-        ? "none"
-        : "block";
+        value ? "none" : "block";
 
 
     document
     .getElementById("logoutBtn")
     .style.display =
-        value
-        ? "block"
-        : "none";
-
-
-    document
-    .querySelectorAll(".admin")
-    .forEach(el=>{
-
-        el.style.display =
-            value
-            ? "table-cell"
-            : "none";
-
-    });
+        value ? "block" : "none";
 
 
     render();
-
 }
 
 
@@ -696,7 +644,6 @@ function openLogin(){
     .getElementById("loginModal")
     .style.display =
         "flex";
-
 }
 
 
@@ -706,28 +653,21 @@ function closeLogin(){
     .getElementById("loginModal")
     .style.display =
         "none";
-
 }
 
 
 async function login(){
 
     const email =
-        document
-        .getElementById("email")
-        .value
-        .trim();
-
+        document.getElementById("email")
+        .value.trim();
 
     const password =
-        document
-        .getElementById("password")
+        document.getElementById("password")
         .value;
 
-
     const status =
-        document
-        .getElementById("loginStatus");
+        document.getElementById("loginStatus");
 
 
     status.textContent =
@@ -735,13 +675,10 @@ async function login(){
 
 
     const {error} =
-        await supabaseClient
-        .auth
+        await supabaseClient.auth
         .signInWithPassword({
-
             email,
             password
-
         });
 
 
@@ -758,14 +695,8 @@ async function login(){
     closeLogin();
 
     await checkAdmin();
-
 }
 
-
-
-/* =========================
-   LOGOUT
-========================= */
 
 async function logout(){
 
@@ -774,13 +705,12 @@ async function logout(){
     .signOut();
 
     setAdminUI(false);
-
 }
 
 
 
 /* =========================
-   OPEN ADD
+   ADD PLAYER
 ========================= */
 
 function openAddPlayer(){
@@ -804,19 +734,11 @@ function openAddPlayer(){
 
 
     document
-    .getElementById("playerMode")
-    .value =
-        "Combat";
+    .getElementById("kitRows")
+    .innerHTML = "";
 
 
-    document
-    .getElementById("playerTier")
-    .value = "";
-
-
-    document
-    .getElementById("playerPoints")
-    .value = "";
+    addKitRow();
 
 
     document
@@ -828,7 +750,285 @@ function openAddPlayer(){
     .getElementById("playerModal")
     .style.display =
         "flex";
+}
 
+
+
+/* =========================
+   KIT ROW
+========================= */
+
+function addKitRow(
+    kit="UHC",
+    tier="",
+    points=""
+){
+
+    const container =
+        document.getElementById("kitRows");
+
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "kit-row";
+
+
+    row.innerHTML = `
+
+        <select class="new-kit">
+
+            <option value="UHC">
+                UHC
+            </option>
+
+            <option value="Crystal">
+                Crystal
+            </option>
+
+            <option value="Mace">
+                Mace
+            </option>
+
+            <option value="Sword">
+                Sword
+            </option>
+
+        </select>
+
+        <input
+        class="new-tier"
+        placeholder="Tier مثل HT1">
+
+        <input
+        class="new-points"
+        type="number"
+        placeholder="النقاط">
+
+        <button
+        class="remove-kit"
+        onclick="this.parentElement.remove()">
+
+        🗑️
+
+        </button>
+    `;
+
+
+    row.querySelector(".new-kit").value =
+        kit;
+
+    row.querySelector(".new-tier").value =
+        tier;
+
+    row.querySelector(".new-points").value =
+        points;
+
+
+    container.appendChild(row);
+}
+
+
+
+/* =========================
+   SAVE PLAYER
+========================= */
+
+async function savePlayer(){
+
+    if(!isAdmin)
+        return;
+
+
+    const name =
+        document
+        .getElementById("playerName")
+        .value
+        .trim();
+
+
+    const status =
+        document
+        .getElementById("playerStatus");
+
+
+    if(!name){
+
+        status.textContent =
+            "اكتب اسم اللاعب";
+
+        return;
+    }
+
+
+    const rows =
+        [...document.querySelectorAll(".kit-row")];
+
+
+    if(rows.length === 0){
+
+        status.textContent =
+            "أضف Kit واحد على الأقل";
+
+        return;
+    }
+
+
+    const kits =
+        rows.map(row => ({
+
+            kit:
+                row.querySelector(".new-kit")
+                .value,
+
+            tier:
+                row.querySelector(".new-tier")
+                .value
+                .trim(),
+
+            points:
+                Number(
+                    row.querySelector(".new-points")
+                    .value || 0
+                )
+
+        }));
+
+
+    for(const kit of kits){
+
+        if(!kit.tier){
+
+            status.textContent =
+                "اكتب Tier لكل Kit";
+
+            return;
+        }
+    }
+
+
+    status.textContent =
+        "جاري الحفظ...";
+
+
+    try{
+
+        let playerId =
+            editingPlayerId;
+
+
+        /* CREATE PLAYER */
+
+        if(!playerId){
+
+            const result =
+                await supabaseClient
+                .from("players")
+                .insert({
+                    name
+                })
+                .select("id")
+                .single();
+
+
+            if(result.error)
+                throw result.error;
+
+
+            playerId =
+                result.data.id;
+
+
+            const kitResult =
+                await supabaseClient
+                .from("player_kits")
+                .insert(
+                    kits.map(k => ({
+                        player_id:playerId,
+                        kit:k.kit,
+                        tier:k.tier,
+                        points:k.points
+                    }))
+                );
+
+
+            if(kitResult.error)
+                throw kitResult.error;
+
+        }
+
+
+        /* UPDATE PLAYER */
+
+        else{
+
+            const updateResult =
+                await supabaseClient
+                .from("players")
+                .update({
+                    name
+                })
+                .eq(
+                    "id",
+                    playerId
+                );
+
+
+            if(updateResult.error)
+                throw updateResult.error;
+
+
+            const oldKits =
+                playerKits.filter(
+                    k =>
+                    String(k.player_id) ===
+                    String(playerId)
+                );
+
+
+            for(const oldKit of oldKits){
+
+                await supabaseClient
+                .from("player_kits")
+                .delete()
+                .eq("id",oldKit.id);
+
+            }
+
+
+            const kitResult =
+                await supabaseClient
+                .from("player_kits")
+                .insert(
+                    kits.map(k => ({
+                        player_id:playerId,
+                        kit:k.kit,
+                        tier:k.tier,
+                        points:k.points
+                    }))
+                );
+
+
+            if(kitResult.error)
+                throw kitResult.error;
+
+        }
+
+
+        closePlayerModal();
+
+        await loadData();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        status.textContent =
+            "خطأ: " +
+            error.message;
+    }
 }
 
 
@@ -868,25 +1068,39 @@ function openEditPlayer(id){
     document
     .getElementById("playerName")
     .value =
-        player.name || "";
+        player.name;
 
 
     document
-    .getElementById("playerMode")
-    .value =
-        player.mode || "Combat";
+    .getElementById("kitRows")
+    .innerHTML = "";
 
 
-    document
-    .getElementById("playerTier")
-    .value =
-        player.tier || "";
+    const kits =
+        playerKits.filter(
+            k =>
+            String(k.player_id) ===
+            String(id)
+        );
 
 
-    document
-    .getElementById("playerPoints")
-    .value =
-        player.points || 0;
+    if(kits.length){
+
+        kits.forEach(k => {
+
+            addKitRow(
+                k.kit,
+                k.tier,
+                k.points
+            );
+
+        });
+
+    }else{
+
+        addKitRow();
+
+    }
 
 
     document
@@ -898,125 +1112,12 @@ function openEditPlayer(id){
     .getElementById("playerModal")
     .style.display =
         "flex";
-
 }
 
 
 
 /* =========================
-   SAVE PLAYER
-========================= */
-
-async function savePlayer(){
-
-    if(!isAdmin)
-        return;
-
-
-    const name =
-        document
-        .getElementById("playerName")
-        .value
-        .trim();
-
-
-    const mode =
-        document
-        .getElementById("playerMode")
-        .value;
-
-
-    const tier =
-        document
-        .getElementById("playerTier")
-        .value
-        .trim();
-
-
-    const points =
-        Number(
-            document
-            .getElementById("playerPoints")
-            .value
-        );
-
-
-    const status =
-        document
-        .getElementById("playerStatus");
-
-
-    if(!name || !tier){
-
-        status.textContent =
-            "اكتب اسم اللاعب والـTier";
-
-        return;
-    }
-
-
-    status.textContent =
-        "جاري الحفظ...";
-
-
-    let result;
-
-
-    if(editingPlayerId){
-
-        result =
-            await supabaseClient
-            .from("players")
-            .update({
-
-                name,
-                mode,
-                tier,
-                points
-
-            })
-            .eq(
-                "id",
-                editingPlayerId
-            );
-
-    }else{
-
-        result =
-            await supabaseClient
-            .from("players")
-            .insert({
-
-                name,
-                mode,
-                tier,
-                points
-
-            });
-
-    }
-
-
-    if(result.error){
-
-        status.textContent =
-            "خطأ: " +
-            result.error.message;
-
-        return;
-    }
-
-
-    closePlayerModal();
-
-    await loadPlayers();
-
-}
-
-
-
-/* =========================
-   DELETE
+   DELETE PLAYER
 ========================= */
 
 async function deletePlayer(id){
@@ -1037,15 +1138,13 @@ async function deletePlayer(id){
         return;
 
 
-    const answer =
-        confirm(
+    if(
+        !confirm(
             "هل تريد حذف اللاعب " +
             player.name +
-            "؟"
-        );
-
-
-    if(!answer)
+            " وجميع الـKits الخاصة به؟"
+        )
+    )
         return;
 
 
@@ -1067,8 +1166,183 @@ async function deletePlayer(id){
     }
 
 
-    await loadPlayers();
+    await loadData();
+}
 
+
+
+/* =========================
+   DELETE KIT
+========================= */
+
+async function deleteKit(id){
+
+    if(!isAdmin)
+        return;
+
+
+    if(
+        !confirm(
+            "هل تريد حذف هذا الـKit؟"
+        )
+    )
+        return;
+
+
+    const {error} =
+        await supabaseClient
+        .from("player_kits")
+        .delete()
+        .eq("id",id);
+
+
+    if(error){
+
+        alert(
+            "خطأ: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    await loadData();
+}
+
+
+
+/* =========================
+   EDIT KIT
+========================= */
+
+function openEditKit(id){
+
+    if(!isAdmin)
+        return;
+
+
+    const kit =
+        playerKits.find(
+            k =>
+            String(k.id) ===
+            String(id)
+        );
+
+
+    if(!kit)
+        return;
+
+
+    editingKitId =
+        id;
+
+
+    document
+    .getElementById("editKitName")
+    .value =
+        kit.kit;
+
+
+    document
+    .getElementById("editKitTier")
+    .value =
+        kit.tier;
+
+
+    document
+    .getElementById("editKitPoints")
+    .value =
+        kit.points;
+
+
+    document
+    .getElementById("kitStatus")
+    .textContent = "";
+
+
+    document
+    .getElementById("kitModal")
+    .style.display =
+        "flex";
+}
+
+
+function closeKitModal(){
+
+    document
+    .getElementById("kitModal")
+    .style.display =
+        "none";
+}
+
+
+async function saveKitEdit(){
+
+    if(!isAdmin)
+        return;
+
+
+    const kit =
+        document
+        .getElementById("editKitName")
+        .value;
+
+    const tier =
+        document
+        .getElementById("editKitTier")
+        .value
+        .trim();
+
+    const points =
+        Number(
+            document
+            .getElementById("editKitPoints")
+            .value || 0
+        );
+
+
+    const status =
+        document
+        .getElementById("kitStatus");
+
+
+    if(!tier){
+
+        status.textContent =
+            "اكتب Tier";
+
+        return;
+    }
+
+
+    const {error} =
+        await supabaseClient
+        .from("player_kits")
+        .update({
+            kit,
+            tier,
+            points
+        })
+        .eq(
+            "id",
+            editingKitId
+        );
+
+
+    if(error){
+
+        status.textContent =
+            "خطأ: " +
+            error.message;
+
+        return;
+    }
+
+
+    closeKitModal();
+
+    await loadData();
 }
 
 
@@ -1083,7 +1357,6 @@ function closePlayerModal(){
     .getElementById("playerModal")
     .style.display =
         "none";
-
 }
 
 
@@ -1101,37 +1374,43 @@ function render(){
         .toLowerCase();
 
 
-    const mode =
+    const kitFilter =
         document
-        .getElementById("mode")
+        .getElementById("kitFilter")
         .value;
 
 
     const list =
-        players
-        .filter(player=>{
+        players.filter(player => {
 
             const name =
                 String(
                     player.name || ""
-                )
-                .toLowerCase();
+                ).toLowerCase();
 
 
-            return (
+            if(
+                !name.includes(search)
+            )
+                return false;
 
-                name.includes(search)
+
+            if(
+                kitFilter === "all"
+            )
+                return true;
+
+
+            return playerKits.some(
+                kit =>
+                String(
+                    kit.player_id
+                ) ===
+                String(player.id)
 
                 &&
 
-                (
-                    mode === "all"
-
-                    ||
-
-                    player.mode === mode
-                )
-
+                kit.kit === kitFilter
             );
 
         });
@@ -1143,85 +1422,175 @@ function render(){
 
 
     list.map(
-        (player,index)=>`
+        (player,index) => {
 
-        <tr>
-
-        <td class="rank">
-            ${index + 1}
-        </td>
-
-
-        <td>
-            ${escapeHTML(
-                player.name || ""
-            )}
-        </td>
+            let kits =
+                playerKits.filter(
+                    k =>
+                    String(k.player_id) ===
+                    String(player.id)
+                );
 
 
-        <td>
-            ${escapeHTML(
-                player.mode || ""
-            )}
-        </td>
+            if(
+                kitFilter !== "all"
+            ){
+
+                kits =
+                    kits.filter(
+                        k =>
+                        k.kit ===
+                        kitFilter
+                    );
+
+            }
 
 
-        <td class="tier">
-            ${escapeHTML(
-                player.tier || ""
-            )}
-        </td>
+            const kitsHTML =
+                kits.length
+
+                ?
+
+                kits.map(k => `
+
+                    <div class="kit">
+
+                        <div class="kit-name">
+
+                            ${escapeHTML(k.kit)}
+
+                        </div>
+
+                        <div class="kit-info">
+
+                            Tier:
+                            ${escapeHTML(k.tier)}
+
+                            —
+                            ${k.points || 0}
+                            نقطة
+
+                        </div>
 
 
-        <td>
-            ${player.points || 0}
-        </td>
+                        ${
+                            isAdmin
+
+                            ?
+
+                            `<div class="actions">
+
+                                <button
+                                class="small"
+                                onclick="openEditKit('${k.id}')">
+
+                                ✏️ تعديل
+
+                                </button>
 
 
-        ${
-            isAdmin
+                                <button
+                                class="small danger"
+                                onclick="deleteKit('${k.id}')">
 
-            ?
+                                🗑️ حذف
 
-            `<td class="actions">
+                                </button>
 
-                <button
-                onclick="openEditPlayer('${player.id}')">
+                            </div>`
 
-                ✏️ تعديل
+                            :
 
-                </button>
+                            ""
+
+                        }
+
+                    </div>
+
+                `).join("")
+
+                :
+
+                `<span class="subtitle">
+                    لا توجد Kits
+                </span>`;
 
 
-                <button
-                class="danger"
-                onclick="deletePlayer('${player.id}')">
+            return `
 
-                🗑️ حذف
+                <tr>
 
-                </button>
+                    <td class="rank">
+                        ${index + 1}
+                    </td>
 
-            </td>`
 
-            :
+                    <td>
+                        ${escapeHTML(player.name)}
+                    </td>
 
-            `<td class="admin"></td>`
+
+                    <td>
+
+                        <div class="kits">
+
+                            ${kitsHTML}
+
+                        </div>
+
+                    </td>
+
+
+                    ${
+                        isAdmin
+
+                        ?
+
+                        `<td>
+
+                            <div class="actions">
+
+                                <button
+                                class="small"
+                                onclick="openEditPlayer('${player.id}')">
+
+                                ✏️ تعديل اللاعب
+
+                                </button>
+
+
+                                <button
+                                class="small danger"
+                                onclick="deletePlayer('${player.id}')">
+
+                                🗑️ حذف اللاعب
+
+                                </button>
+
+                            </div>
+
+                        </td>`
+
+                        :
+
+                        `<td class="admin"></td>`
+
+                    }
+
+                </tr>
+
+            `;
 
         }
 
-
-        </tr>
-
-        `
-    )
-    .join("");
+    ).join("");
 
 }
 
 
 
 /* =========================
-   ESCAPE HTML
+   ESCAPE
 ========================= */
 
 function escapeHTML(text){
@@ -1268,7 +1637,7 @@ supabaseClient
 
 checkAdmin();
 
-loadPlayers();
+loadData();
 
 </script>
 
