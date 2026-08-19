@@ -114,12 +114,10 @@ th{
 <body>
 
 <header>
-
-<div>
-<div class="logo">VK TIERS</div>
-<div class="subtitle">Minecraft Competitive Tier List</div>
-</div>
-
+    <div>
+        <div class="logo">VK TIERS</div>
+        <div class="subtitle">Minecraft Competitive Tier List</div>
+    </div>
 </header>
 
 <main>
@@ -135,17 +133,17 @@ th{
 <div class="controls">
 
 <input
-id="search"
-placeholder="ابحث عن لاعب..."
-oninput="render()"
+    id="search"
+    placeholder="ابحث عن لاعب..."
+    oninput="render()"
 >
 
 <select id="mode" onchange="render()">
-<option value="all">كل الأنماط</option>
-<option value="Combat">Combat</option>
-<option value="Crystal">Crystal</option>
-<option value="Mace">Mace</option>
-<option value="Sword">Sword</option>
+    <option value="all">كل الأنماط</option>
+    <option value="Combat">Combat</option>
+    <option value="Crystal">Crystal</option>
+    <option value="Mace">Mace</option>
+    <option value="Sword">Sword</option>
 </select>
 
 </div>
@@ -154,11 +152,11 @@ oninput="render()"
 
 <thead>
 <tr>
-<th>#</th>
-<th>اللاعب</th>
-<th>النمط</th>
-<th>Tier</th>
-<th>النقاط</th>
+    <th>#</th>
+    <th>اللاعب</th>
+    <th>النمط</th>
+    <th>Tier</th>
+    <th>النقاط</th>
 </tr>
 </thead>
 
@@ -177,20 +175,12 @@ oninput="render()"
 
 <script>
 
-/* =========================
-   SUPABASE
-========================= */
-
 const SUPABASE_URL =
 "https://ydyugyzemtbrjbnuvyka.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_Vj2BaNXlQQSrbb71D7rmfA_PxTuYtgI";
-
-
-/* =========================
-   تحميل اللاعبين
-========================= */
+"sb_publishable_Vj2BaNXlQQSrbb71D7rmfA_PxTuYtgI
+";
 
 let players = [];
 
@@ -203,35 +193,29 @@ async function loadPlayers(){
     status.textContent =
         "جاري تحميل اللاعبين...";
 
-    try{
+    try {
 
-        const response =
-        await fetch(
+        const response = await fetch(
             SUPABASE_URL +
             "/rest/v1/players?select=*",
             {
-                method:"GET",
+                method: "GET",
 
-                headers:{
-                    "apikey":SUPABASE_KEY,
+                headers: {
+                    "apikey": SUPABASE_KEY,
                     "Authorization":
-                    "Bearer " + SUPABASE_KEY
+                        "Bearer " + SUPABASE_KEY
                 }
             }
         );
 
-
-        if(!response.ok){
-
+        if (!response.ok) {
             throw new Error(
                 "HTTP " + response.status
             );
-
         }
 
-
-        players =
-            await response.json();
+        players = await response.json();
 
         render();
 
@@ -239,23 +223,18 @@ async function loadPlayers(){
             players.length +
             " لاعب محمل";
 
+    } catch(error) {
+
+        console.error(
+            "Supabase Error:",
+            error
+        );
+
+        status.textContent =
+            "خطأ: " + error.message;
     }
-
-catch(error){
-    console.error(error);
-
-    status.textContent =
-        "خطأ: " + error.message;
 }
 
-    }
-
-}
-
-
-/* =========================
-   عرض اللاعبين
-========================= */
 
 function render(){
 
@@ -269,7 +248,6 @@ function render(){
         document
         .getElementById("mode")
         .value;
-
 
     const list =
         players
@@ -293,60 +271,54 @@ function render(){
             );
 
         })
-
         .sort(
             (a,b) =>
-            Number(b.points || 0) -
-            Number(a.points || 0)
+                Number(b.points || 0) -
+                Number(a.points || 0)
         );
 
 
     document
-    .getElementById("players")
-    .innerHTML =
+        .getElementById("players")
+        .innerHTML =
 
-    list.map(
-        (player,index) => `
+        list.map(
+            (player,index) => `
 
-        <tr>
+            <tr>
 
-            <td class="rank">
-                ${index + 1}
-            </td>
+                <td class="rank">
+                    ${index + 1}
+                </td>
 
-            <td>
-                ${escapeHTML(
-                    player.name || ""
-                )}
-            </td>
+                <td>
+                    ${escapeHTML(
+                        player.name || ""
+                    )}
+                </td>
 
-            <td>
-                ${escapeHTML(
-                    player.mode || ""
-                )}
-            </td>
+                <td>
+                    ${escapeHTML(
+                        player.mode || ""
+                    )}
+                </td>
 
-            <td class="tier">
-                ${escapeHTML(
-                    player.tier || ""
-                )}
-            </td>
+                <td class="tier">
+                    ${escapeHTML(
+                        player.tier || ""
+                    )}
+                </td>
 
-            <td>
-                ${player.points || 0}
-            </td>
+                <td>
+                    ${player.points || 0}
+                </td>
 
-        </tr>
+            </tr>
 
-        `
-    ).join("");
-
+            `
+        ).join("");
 }
 
-
-/* =========================
-   حماية النص
-========================= */
 
 function escapeHTML(text){
 
@@ -362,15 +334,9 @@ function escapeHTML(text){
             "'":"&#039;"
 
         })[character]
-
     );
-
 }
 
-
-/* =========================
-   تشغيل الموقع
-========================= */
 
 loadPlayers();
 
