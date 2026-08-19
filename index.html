@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VK TIERS</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 
@@ -22,6 +24,7 @@ header{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    gap:15px;
 }
 
 .logo{
@@ -35,21 +38,6 @@ header{
     font-size:13px;
 }
 
-button,input,select{
-    background:#0c0f15;
-    color:white;
-    border:1px solid #303643;
-    border-radius:10px;
-    padding:12px;
-}
-
-button{
-    background:#ff3158;
-    border:0;
-    cursor:pointer;
-    font-weight:bold;
-}
-
 main{
     max-width:1100px;
     margin:35px auto;
@@ -61,6 +49,7 @@ main{
     border:1px solid #272c38;
     border-radius:18px;
     padding:22px;
+    margin-bottom:20px;
 }
 
 .controls{
@@ -70,9 +59,32 @@ main{
     margin:20px 0;
 }
 
-input{
-    flex:1;
-    min-width:200px;
+input,select{
+    background:#0c0f15;
+    color:white;
+    border:1px solid #303643;
+    border-radius:10px;
+    padding:12px;
+}
+
+input{flex:1;min-width:200px}
+
+button{
+    background:#ff3158;
+    color:white;
+    border:0;
+    border-radius:10px;
+    padding:12px 16px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button.secondary{
+    background:#292e38;
+}
+
+.admin{
+    display:none;
 }
 
 table{
@@ -86,22 +98,43 @@ th,td{
     text-align:right;
 }
 
-th{
-    color:#858e9f;
-}
+th{color:#858e9f}
 
 .rank{
     color:#ff3158;
     font-weight:bold;
 }
 
-.tier{
-    font-weight:bold;
-}
+.tier{font-weight:bold}
 
 #status{
     margin-top:15px;
     color:#858e9f;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-box{
+    width:100%;
+    max-width:450px;
+    background:#12151c;
+    border:1px solid #303643;
+    border-radius:18px;
+    padding:22px;
+}
+
+.modal-box input,
+.modal-box select{
+    width:100%;
+    margin:7px 0;
 }
 
 @media(max-width:600px){
@@ -114,10 +147,24 @@ th{
 <body>
 
 <header>
-    <div>
-        <div class="logo">VK TIERS</div>
-        <div class="subtitle">Minecraft Competitive Tier List</div>
-    </div>
+
+<div>
+<div class="logo">VK TIERS</div>
+<div class="subtitle">Minecraft Competitive Tier List</div>
+</div>
+
+<button id="loginBtn" onclick="openLogin()">
+تسجيل دخول الإدارة
+</button>
+
+<button
+id="logoutBtn"
+class="secondary"
+onclick="logout()"
+style="display:none">
+تسجيل خروج
+</button>
+
 </header>
 
 <main>
@@ -133,35 +180,47 @@ th{
 <div class="controls">
 
 <input
-    id="search"
-    placeholder="ابحث عن لاعب..."
-    oninput="render()"
+id="search"
+placeholder="ابحث عن لاعب..."
+oninput="render()"
 >
 
 <select id="mode" onchange="render()">
-    <option value="all">كل الأنماط</option>
-    <option value="Combat">Combat</option>
-    <option value="Crystal">Crystal</option>
-    <option value="Mace">Mace</option>
-    <option value="Sword">Sword</option>
+<option value="all">كل الأنماط</option>
+<option value="Combat">Combat</option>
+<option value="Crystal">Crystal</option>
+<option value="Mace">Mace</option>
+<option value="Sword">Sword</option>
 </select>
 
 </div>
+
+<div
+id="adminPanel"
+class="admin">
+
+<button onclick="openAddPlayer()">
+➕ إضافة لاعب
+</button>
+
+</div>
+
+<br>
 
 <table>
 
 <thead>
 <tr>
-    <th>#</th>
-    <th>اللاعب</th>
-    <th>النمط</th>
-    <th>Tier</th>
-    <th>النقاط</th>
+<th>#</th>
+<th>اللاعب</th>
+<th>النمط</th>
+<th>Tier</th>
+<th>النقاط</th>
+<th class="admin">إدارة</th>
 </tr>
 </thead>
 
-<tbody id="players">
-</tbody>
+<tbody id="players"></tbody>
 
 </table>
 
@@ -173,7 +232,97 @@ th{
 
 </main>
 
+
+<!-- تسجيل الدخول -->
+
+<div id="loginModal" class="modal">
+
+<div class="modal-box">
+
+<h2>تسجيل دخول الإدارة</h2>
+
+<input
+id="email"
+type="email"
+placeholder="البريد الإلكتروني"
+>
+
+<input
+id="password"
+type="password"
+placeholder="كلمة المرور"
+>
+
+<button onclick="login()">
+دخول
+</button>
+
+<button
+class="secondary"
+onclick="closeLogin()">
+إلغاء
+</button>
+
+<p id="loginStatus"></p>
+
+</div>
+
+</div>
+
+
+<!-- إضافة لاعب -->
+
+<div id="playerModal" class="modal">
+
+<div class="modal-box">
+
+<h2>إضافة لاعب</h2>
+
+<input
+id="playerName"
+placeholder="اسم اللاعب"
+>
+
+<select id="playerMode">
+<option value="Combat">Combat</option>
+<option value="Crystal">Crystal</option>
+<option value="Mace">Mace</option>
+<option value="Sword">Sword</option>
+</select>
+
+<input
+id="playerTier"
+placeholder="Tier مثل HT1"
+>
+
+<input
+id="playerPoints"
+type="number"
+placeholder="النقاط"
+>
+
+<button onclick="addPlayer()">
+إضافة
+</button>
+
+<button
+class="secondary"
+onclick="closePlayerModal()">
+إلغاء
+</button>
+
+<p id="playerStatus"></p>
+
+</div>
+
+</div>
+
+
 <script>
+
+/* =========================
+   SUPABASE
+========================= */
 
 const SUPABASE_URL =
 "https://ydyugyzemtbrjbnuvyka.supabase.co";
@@ -181,8 +330,24 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_Vj2BaNXlQQSrbb71D7rmfA_PxTuYtgI";
 
-let players = [];
+const supabaseClient =
+supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
+
+/* =========================
+   البيانات
+========================= */
+
+let players = [];
+let isAdmin = false;
+
+
+/* =========================
+   تحميل اللاعبين
+========================= */
 
 async function loadPlayers(){
 
@@ -192,29 +357,17 @@ async function loadPlayers(){
     status.textContent =
         "جاري تحميل اللاعبين...";
 
-    try {
+    try{
 
-        const response = await fetch(
-            SUPABASE_URL +
-            "/rest/v1/players?select=*",
-            {
-                method: "GET",
+        const { data, error } =
+            await supabaseClient
+            .from("players")
+            .select("*");
 
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization":
-                        "Bearer " + SUPABASE_KEY
-                }
-            }
-        );
+        if(error)
+            throw error;
 
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        players = await response.json();
+        players = data || [];
 
         render();
 
@@ -222,18 +375,288 @@ async function loadPlayers(){
             players.length +
             " لاعب محمل";
 
-    } catch(error) {
+    }catch(error){
 
-        console.error(
-            "Supabase Error:",
-            error
-        );
+        console.error(error);
 
         status.textContent =
-            "خطأ: " + error.message;
+            "خطأ: " +
+            error.message;
     }
 }
 
+
+/* =========================
+   التحقق من الإدارة
+========================= */
+
+async function checkAdmin(){
+
+    const {
+        data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if(!user){
+
+        setAdminUI(false);
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if(error){
+
+        console.error(error);
+        setAdminUI(false);
+        return;
+    }
+
+    if(
+        data &&
+        (
+            data.role === "owner" ||
+            data.role === "admin"
+        )
+    ){
+
+        setAdminUI(true);
+
+    }else{
+
+        setAdminUI(false);
+    }
+}
+
+
+/* =========================
+   واجهة الإدارة
+========================= */
+
+function setAdminUI(value){
+
+    isAdmin = value;
+
+    document
+    .getElementById("adminPanel")
+    .style.display =
+        value ? "block" : "none";
+
+    document
+    .getElementById("loginBtn")
+    .style.display =
+        value ? "none" : "block";
+
+    document
+    .getElementById("logoutBtn")
+    .style.display =
+        value ? "block" : "none";
+
+    document
+    .querySelectorAll(".admin")
+    .forEach(el => {
+
+        el.style.display =
+            value ? "table-cell" : "none";
+
+    });
+
+    render();
+}
+
+
+/* =========================
+   تسجيل الدخول
+========================= */
+
+function openLogin(){
+
+    document
+    .getElementById("loginModal")
+    .style.display =
+        "flex";
+}
+
+
+function closeLogin(){
+
+    document
+    .getElementById("loginModal")
+    .style.display =
+        "none";
+}
+
+
+async function login(){
+
+    const email =
+        document
+        .getElementById("email")
+        .value;
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
+    const status =
+        document
+        .getElementById("loginStatus");
+
+    status.textContent =
+        "جاري تسجيل الدخول...";
+
+    const { error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if(error){
+
+        status.textContent =
+            "خطأ: " +
+            error.message;
+
+        return;
+    }
+
+    closeLogin();
+
+    await checkAdmin();
+}
+
+
+/* =========================
+   تسجيل الخروج
+========================= */
+
+async function logout(){
+
+    await supabaseClient.auth.signOut();
+
+    setAdminUI(false);
+}
+
+
+/* =========================
+   إضافة لاعب
+========================= */
+
+function openAddPlayer(){
+
+    if(!isAdmin)
+        return;
+
+    document
+    .getElementById("playerModal")
+    .style.display =
+        "flex";
+}
+
+
+function closePlayerModal(){
+
+    document
+    .getElementById("playerModal")
+    .style.display =
+        "none";
+}
+
+
+async function addPlayer(){
+
+    if(!isAdmin)
+        return;
+
+    const name =
+        document
+        .getElementById("playerName")
+        .value
+        .trim();
+
+    const mode =
+        document
+        .getElementById("playerMode")
+        .value;
+
+    const tier =
+        document
+        .getElementById("playerTier")
+        .value
+        .trim();
+
+    const points =
+        Number(
+            document
+            .getElementById("playerPoints")
+            .value
+        );
+
+    const status =
+        document
+        .getElementById("playerStatus");
+
+
+    if(!name || !tier){
+
+        status.textContent =
+            "اكتب اسم اللاعب والـTier";
+
+        return;
+    }
+
+
+    status.textContent =
+        "جاري الإضافة...";
+
+
+    const { error } =
+        await supabaseClient
+        .from("players")
+        .insert({
+            name,
+            mode,
+            tier,
+            points
+        });
+
+
+    if(error){
+
+        status.textContent =
+            "خطأ: " +
+            error.message;
+
+        return;
+    }
+
+
+    document
+    .getElementById("playerName")
+    .value = "";
+
+    document
+    .getElementById("playerTier")
+    .value = "";
+
+    document
+    .getElementById("playerPoints")
+    .value = "";
+
+    closePlayerModal();
+
+    await loadPlayers();
+}
+
+
+/* =========================
+   عرض اللاعبين
+========================= */
 
 function render(){
 
@@ -248,6 +671,7 @@ function render(){
         .getElementById("mode")
         .value;
 
+
     const list =
         players
         .filter(player => {
@@ -257,16 +681,12 @@ function render(){
                     player.name || ""
                 ).toLowerCase();
 
-            const matchesName =
-                name.includes(search);
-
-            const matchesMode =
-                mode === "all" ||
-                player.mode === mode;
-
             return (
-                matchesName &&
-                matchesMode
+                name.includes(search) &&
+                (
+                    mode === "all" ||
+                    player.mode === mode
+                )
             );
 
         })
@@ -278,46 +698,101 @@ function render(){
 
 
     document
-        .getElementById("players")
-        .innerHTML =
+    .getElementById("players")
+    .innerHTML =
 
-        list.map(
-            (player,index) => `
+    list.map(
+        (player,index) => `
 
-            <tr>
+        <tr>
 
-                <td class="rank">
-                    ${index + 1}
-                </td>
+        <td class="rank">
+            ${index + 1}
+        </td>
 
-                <td>
-                    ${escapeHTML(
-                        player.name || ""
-                    )}
-                </td>
+        <td>
+            ${escapeHTML(
+                player.name || ""
+            )}
+        </td>
 
-                <td>
-                    ${escapeHTML(
-                        player.mode || ""
-                    )}
-                </td>
+        <td>
+            ${escapeHTML(
+                player.mode || ""
+            )}
+        </td>
 
-                <td class="tier">
-                    ${escapeHTML(
-                        player.tier || ""
-                    )}
-                </td>
+        <td class="tier">
+            ${escapeHTML(
+                player.tier || ""
+            )}
+        </td>
 
-                <td>
-                    ${player.points || 0}
-                </td>
+        <td>
+            ${player.points || 0}
+        </td>
 
-            </tr>
+        ${
+            isAdmin
+            ?
+            `<td class="admin">
+                <button
+                onclick="deletePlayer('${player.id}')">
+                حذف
+                </button>
+            </td>`
+            :
+            ""
+        }
 
-            `
-        ).join("");
+        </tr>
+
+        `
+    ).join("");
 }
 
+
+/* =========================
+   حذف لاعب
+========================= */
+
+async function deletePlayer(id){
+
+    if(!isAdmin)
+        return;
+
+    if(
+        !confirm(
+            "هل تريد حذف هذا اللاعب؟"
+        )
+    )
+        return;
+
+
+    const { error } =
+        await supabaseClient
+        .from("players")
+        .delete()
+        .eq("id", id);
+
+
+    if(error){
+
+        alert(
+            "خطأ: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadPlayers();
+}
+
+
+/* =========================
+   حماية النص
+========================= */
 
 function escapeHTML(text){
 
@@ -337,6 +812,17 @@ function escapeHTML(text){
 }
 
 
+/* =========================
+   بدء الموقع
+========================= */
+
+supabaseClient.auth.onAuthStateChange(
+    async () => {
+        await checkAdmin();
+    }
+);
+
+checkAdmin();
 loadPlayers();
 
 </script>
