@@ -3,17 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>VK TIERS</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+    box-sizing:border-box;
+}
 
 body{
     margin:0;
     background:#090b10;
-    color:#fff;
+    color:white;
     font-family:Arial,sans-serif;
 }
 
@@ -21,10 +25,11 @@ header{
     padding:22px 6%;
     background:#0e1118;
     border-bottom:1px solid #292e3a;
+
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:15px;
+    gap:12px;
 }
 
 .logo{
@@ -49,7 +54,6 @@ main{
     border:1px solid #272c38;
     border-radius:18px;
     padding:22px;
-    margin-bottom:20px;
 }
 
 .controls{
@@ -59,7 +63,8 @@ main{
     margin:20px 0;
 }
 
-input,select{
+input,
+select{
     background:#0c0f15;
     color:white;
     border:1px solid #303643;
@@ -67,20 +72,27 @@ input,select{
     padding:12px;
 }
 
-input{flex:1;min-width:200px}
+input{
+    flex:1;
+    min-width:200px;
+}
 
 button{
     background:#ff3158;
     color:white;
     border:0;
     border-radius:10px;
-    padding:12px 16px;
+    padding:11px 15px;
     cursor:pointer;
     font-weight:bold;
 }
 
 button.secondary{
     background:#292e38;
+}
+
+button.danger{
+    background:#8f1f35;
 }
 
 .admin{
@@ -92,20 +104,31 @@ table{
     border-collapse:collapse;
 }
 
-th,td{
-    padding:15px 8px;
+th,
+td{
+    padding:14px 8px;
     border-bottom:1px solid #272c38;
     text-align:right;
 }
 
-th{color:#858e9f}
+th{
+    color:#858e9f;
+}
 
 .rank{
     color:#ff3158;
     font-weight:bold;
 }
 
-.tier{font-weight:bold}
+.tier{
+    font-weight:bold;
+}
+
+.actions{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
 
 #status{
     margin-top:15px;
@@ -114,20 +137,27 @@ th{color:#858e9f}
 
 .modal{
     display:none;
+
     position:fixed;
     inset:0;
+
     background:rgba(0,0,0,.75);
+
     align-items:center;
     justify-content:center;
+
     padding:20px;
 }
 
 .modal-box{
     width:100%;
     max-width:450px;
+
     background:#12151c;
+
     border:1px solid #303643;
     border-radius:18px;
+
     padding:22px;
 }
 
@@ -137,10 +167,34 @@ th{color:#858e9f}
     margin:7px 0;
 }
 
-@media(max-width:600px){
-    .logo{font-size:24px}
-    th,td{font-size:13px}
+.modal-buttons{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
 }
+
+.modal-buttons button{
+    flex:1;
+}
+
+#loginStatus,
+#playerStatus{
+    color:#ff879d;
+}
+
+@media(max-width:600px){
+
+    .logo{
+        font-size:24px;
+    }
+
+    th,
+    td{
+        font-size:13px;
+    }
+
+}
+
 </style>
 </head>
 
@@ -149,12 +203,25 @@ th{color:#858e9f}
 <header>
 
 <div>
-<div class="logo">VK TIERS</div>
-<div class="subtitle">Minecraft Competitive Tier List</div>
+
+<div class="logo">
+VK TIERS
 </div>
 
-<button id="loginBtn" onclick="openLogin()">
-تسجيل دخول الإدارة
+<div class="subtitle">
+Minecraft Competitive Tier List
+</div>
+
+</div>
+
+<div>
+
+<button
+id="loginBtn"
+onclick="openLogin()">
+
+🔐 دخول الإدارة
+
 </button>
 
 <button
@@ -162,20 +229,28 @@ id="logoutBtn"
 class="secondary"
 onclick="logout()"
 style="display:none">
+
 تسجيل خروج
+
 </button>
 
+</div>
+
 </header>
+
 
 <main>
 
 <section class="card">
 
-<h1>VK Tiers</h1>
+<h1>
+VK Tiers
+</h1>
 
 <p class="subtitle">
 تصنيف لاعبي Minecraft
 </p>
+
 
 <div class="controls">
 
@@ -185,47 +260,101 @@ placeholder="ابحث عن لاعب..."
 oninput="render()"
 >
 
-<select id="mode" onchange="render()">
-<option value="all">كل الأنماط</option>
-<option value="Combat">Combat</option>
-<option value="Crystal">Crystal</option>
-<option value="Mace">Mace</option>
-<option value="Sword">Sword</option>
+<select
+id="mode"
+onchange="render()">
+
+<option value="all">
+كل الأنماط
+</option>
+
+<option value="Combat">
+Combat
+</option>
+
+<option value="Crystal">
+Crystal
+</option>
+
+<option value="Mace">
+Mace
+</option>
+
+<option value="Sword">
+Sword
+</option>
+
 </select>
 
 </div>
+
 
 <div
 id="adminPanel"
 class="admin">
 
-<button onclick="openAddPlayer()">
+<button
+onclick="openAddPlayer()">
+
 ➕ إضافة لاعب
+
 </button>
 
 </div>
 
 <br>
 
+
 <table>
 
 <thead>
+
 <tr>
-<th>#</th>
-<th>اللاعب</th>
-<th>النمط</th>
-<th>Tier</th>
-<th>النقاط</th>
-<th class="admin">إدارة</th>
+
+<th>
+#
+</th>
+
+<th>
+اللاعب
+</th>
+
+<th>
+النمط
+</th>
+
+<th>
+Tier
+</th>
+
+<th>
+النقاط
+</th>
+
+<th
+class="admin">
+
+الإدارة
+
+</th>
+
 </tr>
+
 </thead>
 
-<tbody id="players"></tbody>
+
+<tbody
+id="players">
+
+</tbody>
 
 </table>
 
+
 <div id="status">
+
 جاري تحميل اللاعبين...
+
 </div>
 
 </section>
@@ -233,13 +362,18 @@ class="admin">
 </main>
 
 
-<!-- تسجيل الدخول -->
 
-<div id="loginModal" class="modal">
+<!-- LOGIN -->
+
+<div
+id="loginModal"
+class="modal">
 
 <div class="modal-box">
 
-<h2>تسجيل دخول الإدارة</h2>
+<h2>
+تسجيل دخول الإدارة
+</h2>
 
 <input
 id="email"
@@ -253,41 +387,74 @@ type="password"
 placeholder="كلمة المرور"
 >
 
-<button onclick="login()">
+<div class="modal-buttons">
+
+<button
+onclick="login()">
+
 دخول
+
 </button>
 
 <button
 class="secondary"
 onclick="closeLogin()">
+
 إلغاء
+
 </button>
 
-<p id="loginStatus"></p>
+</div>
+
+<p
+id="loginStatus">
+</p>
 
 </div>
 
 </div>
 
 
-<!-- إضافة لاعب -->
 
-<div id="playerModal" class="modal">
+<!-- ADD / EDIT -->
+
+<div
+id="playerModal"
+class="modal">
 
 <div class="modal-box">
 
-<h2>إضافة لاعب</h2>
+<h2
+id="playerModalTitle">
+
+إضافة لاعب
+
+</h2>
 
 <input
 id="playerName"
 placeholder="اسم اللاعب"
 >
 
-<select id="playerMode">
-<option value="Combat">Combat</option>
-<option value="Crystal">Crystal</option>
-<option value="Mace">Mace</option>
-<option value="Sword">Sword</option>
+<select
+id="playerMode">
+
+<option value="Combat">
+Combat
+</option>
+
+<option value="Crystal">
+Crystal
+</option>
+
+<option value="Mace">
+Mace
+</option>
+
+<option value="Sword">
+Sword
+</option>
+
 </select>
 
 <input
@@ -301,24 +468,37 @@ type="number"
 placeholder="النقاط"
 >
 
-<button onclick="addPlayer()">
-إضافة
+<div class="modal-buttons">
+
+<button
+onclick="savePlayer()">
+
+حفظ
+
 </button>
 
 <button
 class="secondary"
 onclick="closePlayerModal()">
+
 إلغاء
+
 </button>
 
-<p id="playerStatus"></p>
+</div>
+
+<p
+id="playerStatus">
+</p>
 
 </div>
 
 </div>
+
 
 
 <script>
+
 
 /* =========================
    SUPABASE
@@ -330,6 +510,7 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_Vj2BaNXlQQSrbb71D7rmfA_PxTuYtgI";
 
+
 const supabaseClient =
 supabase.createClient(
     SUPABASE_URL,
@@ -337,16 +518,21 @@ supabase.createClient(
 );
 
 
+
 /* =========================
-   البيانات
+   VARIABLES
 ========================= */
 
 let players = [];
+
 let isAdmin = false;
+
+let editingPlayerId = null;
+
 
 
 /* =========================
-   تحميل اللاعبين
+   LOAD PLAYERS
 ========================= */
 
 async function loadPlayers(){
@@ -359,10 +545,11 @@ async function loadPlayers(){
 
     try{
 
-        const { data, error } =
+        const {data,error} =
             await supabaseClient
             .from("players")
-            .select("*");
+            .select("*")
+            .order("points",{ascending:false});
 
         if(error)
             throw error;
@@ -383,38 +570,50 @@ async function loadPlayers(){
             "خطأ: " +
             error.message;
     }
+
 }
 
 
+
 /* =========================
-   التحقق من الإدارة
+   CHECK ADMIN
 ========================= */
 
 async function checkAdmin(){
 
     const {
-        data: { user }
-    } = await supabaseClient.auth.getUser();
+        data:{user}
+    } =
+        await supabaseClient
+        .auth
+        .getUser();
+
 
     if(!user){
 
         setAdminUI(false);
+
         return;
     }
 
-    const { data, error } =
+
+    const {data,error} =
         await supabaseClient
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
+        .eq("user_id",user.id)
         .maybeSingle();
+
 
     if(error){
 
         console.error(error);
+
         setAdminUI(false);
+
         return;
     }
+
 
     if(
         data &&
@@ -429,48 +628,66 @@ async function checkAdmin(){
     }else{
 
         setAdminUI(false);
+
     }
+
 }
 
 
+
 /* =========================
-   واجهة الإدارة
+   ADMIN UI
 ========================= */
 
 function setAdminUI(value){
 
     isAdmin = value;
 
+
     document
     .getElementById("adminPanel")
     .style.display =
-        value ? "block" : "none";
+        value
+        ? "block"
+        : "none";
+
 
     document
     .getElementById("loginBtn")
     .style.display =
-        value ? "none" : "block";
+        value
+        ? "none"
+        : "block";
+
 
     document
     .getElementById("logoutBtn")
     .style.display =
-        value ? "block" : "none";
+        value
+        ? "block"
+        : "none";
+
 
     document
     .querySelectorAll(".admin")
-    .forEach(el => {
+    .forEach(el=>{
 
         el.style.display =
-            value ? "table-cell" : "none";
+            value
+            ? "table-cell"
+            : "none";
 
     });
 
+
     render();
+
 }
 
 
+
 /* =========================
-   تسجيل الدخول
+   LOGIN
 ========================= */
 
 function openLogin(){
@@ -479,6 +696,7 @@ function openLogin(){
     .getElementById("loginModal")
     .style.display =
         "flex";
+
 }
 
 
@@ -488,6 +706,7 @@ function closeLogin(){
     .getElementById("loginModal")
     .style.display =
         "none";
+
 }
 
 
@@ -496,25 +715,35 @@ async function login(){
     const email =
         document
         .getElementById("email")
-        .value;
+        .value
+        .trim();
+
 
     const password =
         document
         .getElementById("password")
         .value;
 
+
     const status =
         document
         .getElementById("loginStatus");
 
+
     status.textContent =
         "جاري تسجيل الدخول...";
 
-    const { error } =
-        await supabaseClient.auth.signInWithPassword({
+
+    const {error} =
+        await supabaseClient
+        .auth
+        .signInWithPassword({
+
             email,
             password
+
         });
+
 
     if(error){
 
@@ -525,26 +754,33 @@ async function login(){
         return;
     }
 
+
     closeLogin();
 
     await checkAdmin();
+
 }
 
 
+
 /* =========================
-   تسجيل الخروج
+   LOGOUT
 ========================= */
 
 async function logout(){
 
-    await supabaseClient.auth.signOut();
+    await supabaseClient
+    .auth
+    .signOut();
 
     setAdminUI(false);
+
 }
 
 
+
 /* =========================
-   إضافة لاعب
+   OPEN ADD
 ========================= */
 
 function openAddPlayer(){
@@ -552,26 +788,130 @@ function openAddPlayer(){
     if(!isAdmin)
         return;
 
+
+    editingPlayerId = null;
+
+
+    document
+    .getElementById("playerModalTitle")
+    .textContent =
+        "إضافة لاعب";
+
+
+    document
+    .getElementById("playerName")
+    .value = "";
+
+
+    document
+    .getElementById("playerMode")
+    .value =
+        "Combat";
+
+
+    document
+    .getElementById("playerTier")
+    .value = "";
+
+
+    document
+    .getElementById("playerPoints")
+    .value = "";
+
+
+    document
+    .getElementById("playerStatus")
+    .textContent = "";
+
+
     document
     .getElementById("playerModal")
     .style.display =
         "flex";
+
 }
 
 
-function closePlayerModal(){
+
+/* =========================
+   EDIT PLAYER
+========================= */
+
+function openEditPlayer(id){
+
+    if(!isAdmin)
+        return;
+
+
+    const player =
+        players.find(
+            p =>
+            String(p.id) ===
+            String(id)
+        );
+
+
+    if(!player)
+        return;
+
+
+    editingPlayerId =
+        id;
+
+
+    document
+    .getElementById("playerModalTitle")
+    .textContent =
+        "تعديل لاعب";
+
+
+    document
+    .getElementById("playerName")
+    .value =
+        player.name || "";
+
+
+    document
+    .getElementById("playerMode")
+    .value =
+        player.mode || "Combat";
+
+
+    document
+    .getElementById("playerTier")
+    .value =
+        player.tier || "";
+
+
+    document
+    .getElementById("playerPoints")
+    .value =
+        player.points || 0;
+
+
+    document
+    .getElementById("playerStatus")
+    .textContent = "";
+
 
     document
     .getElementById("playerModal")
     .style.display =
-        "none";
+        "flex";
+
 }
 
 
-async function addPlayer(){
+
+/* =========================
+   SAVE PLAYER
+========================= */
+
+async function savePlayer(){
 
     if(!isAdmin)
         return;
+
 
     const name =
         document
@@ -579,10 +919,12 @@ async function addPlayer(){
         .value
         .trim();
 
+
     const mode =
         document
         .getElementById("playerMode")
         .value;
+
 
     const tier =
         document
@@ -590,12 +932,14 @@ async function addPlayer(){
         .value
         .trim();
 
+
     const points =
         Number(
             document
             .getElementById("playerPoints")
             .value
         );
+
 
     const status =
         document
@@ -612,148 +956,67 @@ async function addPlayer(){
 
 
     status.textContent =
-        "جاري الإضافة...";
+        "جاري الحفظ...";
 
 
-    const { error } =
-        await supabaseClient
-        .from("players")
-        .insert({
-            name,
-            mode,
-            tier,
-            points
-        });
+    let result;
 
 
-    if(error){
+    if(editingPlayerId){
+
+        result =
+            await supabaseClient
+            .from("players")
+            .update({
+
+                name,
+                mode,
+                tier,
+                points
+
+            })
+            .eq(
+                "id",
+                editingPlayerId
+            );
+
+    }else{
+
+        result =
+            await supabaseClient
+            .from("players")
+            .insert({
+
+                name,
+                mode,
+                tier,
+                points
+
+            });
+
+    }
+
+
+    if(result.error){
 
         status.textContent =
             "خطأ: " +
-            error.message;
+            result.error.message;
 
         return;
     }
 
 
-    document
-    .getElementById("playerName")
-    .value = "";
-
-    document
-    .getElementById("playerTier")
-    .value = "";
-
-    document
-    .getElementById("playerPoints")
-    .value = "";
-
     closePlayerModal();
 
     await loadPlayers();
+
 }
 
 
-/* =========================
-   عرض اللاعبين
-========================= */
-
-function render(){
-
-    const search =
-        document
-        .getElementById("search")
-        .value
-        .toLowerCase();
-
-    const mode =
-        document
-        .getElementById("mode")
-        .value;
-
-
-    const list =
-        players
-        .filter(player => {
-
-            const name =
-                String(
-                    player.name || ""
-                ).toLowerCase();
-
-            return (
-                name.includes(search) &&
-                (
-                    mode === "all" ||
-                    player.mode === mode
-                )
-            );
-
-        })
-        .sort(
-            (a,b) =>
-                Number(b.points || 0) -
-                Number(a.points || 0)
-        );
-
-
-    document
-    .getElementById("players")
-    .innerHTML =
-
-    list.map(
-        (player,index) => `
-
-        <tr>
-
-        <td class="rank">
-            ${index + 1}
-        </td>
-
-        <td>
-            ${escapeHTML(
-                player.name || ""
-            )}
-        </td>
-
-        <td>
-            ${escapeHTML(
-                player.mode || ""
-            )}
-        </td>
-
-        <td class="tier">
-            ${escapeHTML(
-                player.tier || ""
-            )}
-        </td>
-
-        <td>
-            ${player.points || 0}
-        </td>
-
-        ${
-            isAdmin
-            ?
-            `<td class="admin">
-                <button
-                onclick="deletePlayer('${player.id}')">
-                حذف
-                </button>
-            </td>`
-            :
-            ""
-        }
-
-        </tr>
-
-        `
-    ).join("");
-}
-
 
 /* =========================
-   حذف لاعب
+   DELETE
 ========================= */
 
 async function deletePlayer(id){
@@ -761,19 +1024,36 @@ async function deletePlayer(id){
     if(!isAdmin)
         return;
 
-    if(
-        !confirm(
-            "هل تريد حذف هذا اللاعب؟"
-        )
-    )
+
+    const player =
+        players.find(
+            p =>
+            String(p.id) ===
+            String(id)
+        );
+
+
+    if(!player)
         return;
 
 
-    const { error } =
+    const answer =
+        confirm(
+            "هل تريد حذف اللاعب " +
+            player.name +
+            "؟"
+        );
+
+
+    if(!answer)
+        return;
+
+
+    const {error} =
         await supabaseClient
         .from("players")
         .delete()
-        .eq("id", id);
+        .eq("id",id);
 
 
     if(error){
@@ -786,17 +1066,168 @@ async function deletePlayer(id){
         return;
     }
 
+
     await loadPlayers();
+
 }
 
 
+
 /* =========================
-   حماية النص
+   CLOSE PLAYER MODAL
+========================= */
+
+function closePlayerModal(){
+
+    document
+    .getElementById("playerModal")
+    .style.display =
+        "none";
+
+}
+
+
+
+/* =========================
+   RENDER
+========================= */
+
+function render(){
+
+    const search =
+        document
+        .getElementById("search")
+        .value
+        .toLowerCase();
+
+
+    const mode =
+        document
+        .getElementById("mode")
+        .value;
+
+
+    const list =
+        players
+        .filter(player=>{
+
+            const name =
+                String(
+                    player.name || ""
+                )
+                .toLowerCase();
+
+
+            return (
+
+                name.includes(search)
+
+                &&
+
+                (
+                    mode === "all"
+
+                    ||
+
+                    player.mode === mode
+                )
+
+            );
+
+        });
+
+
+    document
+    .getElementById("players")
+    .innerHTML =
+
+
+    list.map(
+        (player,index)=>`
+
+        <tr>
+
+        <td class="rank">
+            ${index + 1}
+        </td>
+
+
+        <td>
+            ${escapeHTML(
+                player.name || ""
+            )}
+        </td>
+
+
+        <td>
+            ${escapeHTML(
+                player.mode || ""
+            )}
+        </td>
+
+
+        <td class="tier">
+            ${escapeHTML(
+                player.tier || ""
+            )}
+        </td>
+
+
+        <td>
+            ${player.points || 0}
+        </td>
+
+
+        ${
+            isAdmin
+
+            ?
+
+            `<td class="actions">
+
+                <button
+                onclick="openEditPlayer('${player.id}')">
+
+                ✏️ تعديل
+
+                </button>
+
+
+                <button
+                class="danger"
+                onclick="deletePlayer('${player.id}')">
+
+                🗑️ حذف
+
+                </button>
+
+            </td>`
+
+            :
+
+            `<td class="admin"></td>`
+
+        }
+
+
+        </tr>
+
+        `
+    )
+    .join("");
+
+}
+
+
+
+/* =========================
+   ESCAPE HTML
 ========================= */
 
 function escapeHTML(text){
 
-    return String(text).replace(
+    return String(text)
+    .replace(
         /[&<>"']/g,
 
         character => ({
@@ -808,21 +1239,35 @@ function escapeHTML(text){
             "'":"&#039;"
 
         })[character]
+
     );
+
 }
 
 
+
 /* =========================
-   بدء الموقع
+   AUTH EVENTS
 ========================= */
 
-supabaseClient.auth.onAuthStateChange(
-    async () => {
-        await checkAdmin();
+supabaseClient
+.auth
+.onAuthStateChange(
+    () => {
+
+        checkAdmin();
+
     }
 );
 
+
+
+/* =========================
+   START
+========================= */
+
 checkAdmin();
+
 loadPlayers();
 
 </script>
